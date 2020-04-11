@@ -42,7 +42,7 @@ page_for_addr (const void *address)
   if (address < PHYS_BASE) 
     {
       struct page p;
-      struct page *newpage;
+      //struct page *newpage;
       struct hash_elem *e;
 
       /* Find existing page. */
@@ -55,8 +55,8 @@ page_for_addr (const void *address)
 
       if (address >= (thread_current()->user_esp - 0x20) && address < (PHYS_BASE + STACK_MAX))
       {
-		    newpage = page_allocate((void *)address, false);
-		    return newpage;
+		    //newpage = page_allocate((void *)address, false);
+		    return page_allocate((void *)address, false);
       }
     }
   return NULL;
@@ -148,16 +148,50 @@ page_out (struct page *p)
      process to fault.  This must happen before checking the
      dirty bit, to prevent a race with the process dirtying the
      page. */
-
-/* add code here */
+  pagedir_clear_page(p->thread->pagedir, (void *) p->addr);
 
   /* Has the frame been modified? */
 
-/* add code here */
+  /* Acts somewhat as a dirty bit */
+  dirty = pagedir_is_dirty (p->thread->pagedir, (const void *) p->addr);
 
-  /* Write frame contents to disk if necessary. */
+  /* If the frame is not dirty (and file != NULL), we have sucsessfully evicted the page. */
+  if(!dirty)
+  {
+    ok = true;
+  }
 
-/* add code here */
+  /* On the flipside, if the file is null, we shouldn't write the frame to disk.
+      We then swap out the frame and record if it carried out successfully.  */
+
+  if (p->file == NULL)
+  {
+    ok = swap_out(p);
+  }
+  /* Determine whether we write to the disk. This is determined by the private
+     variable associated with the page. */
+
+     /*Write frame contents to disk if necessary*/
+  else
+  {
+    if (dirty)
+    {
+      if(p->private)
+      {
+        ok = swap_out(p);
+      }
+      else
+      {
+        ok = file_write_at(p->file, (const void *) p->frame->base, p->file_bytes, p->file_offset);
+      }
+    }
+  }
+
+  /* Nullify the frame held by the page. */
+  if(ok)
+  {
+    p->frame = NULL;
+  }
 
   return ok;
 }
