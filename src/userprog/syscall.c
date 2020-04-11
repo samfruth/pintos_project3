@@ -505,6 +505,19 @@ static void
 unmap (struct mapping *m) 
 {
 /* add code here */
+  // removes m from mapping list
+  list_remove(&m-elem);
+
+  // run through all pages and make sure they're good
+  for(int i = 0; i < m->page_cnt; i++)
+  {
+    // check for dirty page
+    if(pagedir_is_dirty(thread_current()->pagedir, ((const void *)(m->base) + (PGSIZE *i))))
+    {
+      
+    }
+  }
+
 }
  
 /* Mmap system call. */
