@@ -42,6 +42,7 @@ page_for_addr (const void *address)
   if (address < PHYS_BASE) 
     {
       struct page p;
+      struct page *newpage;
       struct hash_elem *e;
 
       /* Find existing page. */
@@ -52,8 +53,11 @@ page_for_addr (const void *address)
 
       /* No page.  Expand stack? */
 
-/* add code */
-
+      if (address >= (thread_current()->user_esp - 0x20) && address < (PHYS_BASE + STACK_MAX))
+      {
+		    newpage = page_allocate((void *)address, false);
+		    return newpage;
+      }
     }
   return NULL;
 }
