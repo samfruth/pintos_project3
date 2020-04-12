@@ -1,4 +1,5 @@
-		           +---------------------------+
+
+ 		           +---------------------------+
        	           |         CIS 520           |
 		           | PROJECT 3: Virtual Memory |
 		           |     DESIGN DOCUMENT       |
@@ -133,3 +134,4 @@ the quarter.
 >> students, either for future quarters or the remaining projects?
 
 >> Any other comments?
+
