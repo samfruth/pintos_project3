@@ -521,6 +521,11 @@ unmap (struct mapping *m)
     }
   }
 
+  // deallocate all pages to free up memory
+  for (int i = 0; i < m->page_cnt; i++)
+  {
+      page_deallocate((void*)((m->base) + (PGSIZE * i)));
+  }
 }
  
 /* Mmap system call. */
@@ -577,7 +582,8 @@ static int
 sys_munmap (int mapping) 
 {
 /* add code here */
-
+  struct mapping* map = lookup_mapping(mapping);
+  unmap(map);
   return 0;
 }
  
