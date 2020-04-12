@@ -20,6 +20,9 @@ Chord Livingston
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course staff.
 
+Christian J Hughes GitHub repository
+
+
 			PAGE TABLE MANAGEMENT
 			=====================
 
@@ -28,10 +31,20 @@ Chord Livingston
 >> A1: In a few paragraphs, describe the existing code for locating the
 >> frame, if any, that contains the data of a given page.
 
+Currently, in order to locate the frame that contains the data of any 
+given page, the address of the frame contianing the data of the page is 
+stored in the data structure of the page. If there is no frame with the 
+data, an empty frame is used, or a frame is freed up if all are occupied.
+Then the address of the new frame is stored again in the page data
+structure. 
+
 ---- SYNCHRONIZATION ----
 
 >> A2: When two user processes both need a new frame at the same time,
 >> how are races avoided?
+
+We used locks to avoid race conditions.
+
 
 		       PAGING TO AND FROM DISK
 		       =======================
@@ -41,9 +54,17 @@ Chord Livingston
 >> B1: When a frame is required but none is free, some frame must be
 >> evicted.  Describe the algorithm used to choose a frame to evict.
 
+We used a caching and locality aware function called try_frame_alloc_and_lock() 
+to see if a frame was free. If none are free, it choses the frame that 
+was least recently used. 
+
 >> B2: Explain your heuristic for deciding whether a page fault for an
 >> invalid virtual address should cause the stack to be extended into
 >> the page that faulted.
+
+Virtual addresses have to be within not only the bounds of the stack, 
+but also within 32 bytes of the current thread user_esp value. If both
+are true, page_alloc is returned.
 
 			 MEMORY MAPPED FILES
 			 ===================
@@ -60,8 +81,20 @@ Chord Livingston
 >> memory subsystem.  Explain how the page fault and eviction
 >> processes differ between swap pages and other pages.
 
+This process takes place in syscall.c. When the memory mapped pages 
+are evicted in swap, they have to be copied back to the file if 
+they've been modified. If they haven't, they're simply evicted. Each 
+map has an ID, the file it's associated with and other files within
+the thread. Threads can see the files mapped to them. Memory mapped 
+files are managed similarly to pages.
+
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
+
+
+First we check if there are free and unmapped pages found. Page_allocate() will determine
+whether it can map that file to a page. They're only allocated if the pages are free. Otherwise, they cannot
+map since there is already one there. Only one mapped file can be associated with a page.
 
 ---- RATIONALE ----
 
@@ -71,6 +104,11 @@ Chord Livingston
 >> that much of their implementation can be shared.  Explain why your
 >> implementation either does or does not share much of the code for
 >> the two situations.
+
+Both processes are very similar. No matter what, page_out() checks to see if the page 
+has been modified. If so, it can either be written to the disk or swapped which is determined
+by a private variable. That private variable holds the information of if it's read only or not. 
+If not, it then needs to be written back out to the disk.
 
 			   SURVEY QUESTIONS
 			   ================
